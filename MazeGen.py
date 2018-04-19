@@ -2,7 +2,7 @@ import random
 
 width = 10
 height = 10
-difficulty = 5
+difficulty = 0
 
 walls = []
 maze = [0] * width
@@ -22,31 +22,31 @@ def addWalls():
     maze[X][Y] = 1
 
 #############################################################REMAKE THISv
-# # while len(walls) > 0:
-#     if len(walls) > difficulty:
-#         current = len(walls) - round(random.random() * difficulty) - 1
-#     else:
-#         current = round(random.random() * (len(walls) - 1))
-#
-#     cell = walls[current]
-#     walls.pop(current)
-#
-#     X = cell[0]
-#     Y = cell[1]
-#     Dir = cell[2]
-#
-#     if Dir == 1:
-#         if X + 1 < width and maze[X][Y] == 0 and maze[X + 1][Y] == 0 and maze[X + 1][Y - 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
-#             addWalls()
-#     elif Dir == 2:
-#         if X - 1 >  - 1 and maze[X][Y] == 0 and maze[X - 1][Y] == 0 and maze[X - 1][Y - 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
-#             addWalls()
-#     elif Dir == 3:
-#         if Y + 1 < height and maze[X][Y] == 0 and maze[X][Y + 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
-#             addWalls()
-#     elif Dir == 4:
-#         if Y - 1 >  - 1 and maze[X][Y] == 0 and maze[X][Y - 1] == 0 and maze[X - 1][Y - 1] == 0 and maze[X + 1][Y - 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
-#             addWalls()
+while len(walls) > 0:
+    if len(walls) > difficulty:
+        current = len(walls) - round(random.random() * difficulty) - 1
+    else:
+        current = round(random.random() * (len(walls) - 1))
+
+    cell = walls[current]
+    walls.pop(current)
+
+    X = cell[0]
+    Y = cell[1]
+    Dir = cell[2]
+
+    if Dir == 1:
+        if X + 1 < width and maze[X][Y] == 0 and maze[X + 1][Y] == 0 and maze[X + 1][Y - 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
+            addWalls()
+    elif Dir == 2:
+        if X - 1 >  - 1 and maze[X][Y] == 0 and maze[X - 1][Y] == 0 and maze[X - 1][Y - 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
+            addWalls()
+    elif Dir == 3:
+        if Y + 1 < height and maze[X][Y] == 0 and maze[X][Y + 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
+            addWalls()
+    elif Dir == 4:
+        if Y - 1 >  - 1 and maze[X][Y] == 0 and maze[X][Y - 1] == 0 and maze[X - 1][Y - 1] == 0 and maze[X + 1][Y - 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
+            addWalls()
 ###############################################################REMAKE THIS ^
 
 #Set exit
