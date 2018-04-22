@@ -26,6 +26,7 @@ def display(maze,pos):
 
 width = 64
 height = 64
+maze_total = 1000
 
 start_x = 1
 start_y = 1
@@ -33,14 +34,15 @@ start_y = 1
 end_x = width-2
 end_y = height-2
 
-maze_total = 100
+
 branch_chance = 2
     
 directions = [[0,-1],[1,0],[0,1],[-1,0]]
 fileName = "SuperMaze.txt"
 
 line = str(maze_total) + " " + str(width) + " " + str(height) + "\n"
-for k in range(maze_total):
+k = 0
+while k < maze_total:
     
     pos = [[start_x,start_y]]
     previous = [[[start_x,start_y]]]
@@ -89,6 +91,9 @@ for k in range(maze_total):
             previous.append([new.pop(0)])
 
     if maze[end_x][end_y] == 0:
+        k+=1
+        if k % (maze_total/20) == 0:
+            print(str(100.0*k/maze_total) + "%")
         for i in range(len(maze)):
             for j in range(len(maze[i])):
                 line += str(maze[i][j])
