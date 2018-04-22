@@ -1,62 +1,107 @@
-import random
 
-width = 10
-height = 10
-difficulty = 0
+from random import randint
+from random import shuffle
 
-walls = []
-maze = [0] * width
+def isNear(x1,y1,x2,y2):
+    return abs(x1 - x2) <= 1 and abs(y1 - y2) <= 1
 
-for i in range(height):
-    maze[i] = [0] * height
-#Set entrance
-maze[0][1] = 1
+def display(maze,pos):
+    print("------------------------------------------")
+    for i in range(len(maze)):
+        line = ""
+        for j in range(len(maze[i])):
+            gotPos = False
+            for p in pos:
+                if i == p[0] and j == p[1]:
+                    line += "#"
+                    gotPos = True
+                    break
+            if(not gotPos):
+                if maze[i][j] == 1:
+                    line += "O"
+                else:
+                    line += "*"
+        print(line)
+    print("------------------------------------------")
 
-walls.append([1, 1, 1])
+width = 64
+height = 64
 
-def addWalls():
-    walls.append([X + 1, Y, 1])
-    walls.append([X - 1, Y, 2])
-    walls.append([X, Y + 1, 3])
-    walls.append([X, Y - 1, 4])
-    maze[X][Y] = 1
+start_x = 1
+start_y = 1
 
-#############################################################REMAKE THISv
-while len(walls) > 0:
-    if len(walls) > difficulty:
-        current = len(walls) - round(random.random() * difficulty) - 1
-    else:
-        current = round(random.random() * (len(walls) - 1))
+end_x = width-2
+end_y = height-2
 
-    cell = walls[current]
-    walls.pop(current)
+maze_total = 100
+branch_chance = 2
+    
+directions = [[0,-1],[1,0],[0,1],[-1,0]]
+fileName = "SuperMaze.txt"
 
-    X = cell[0]
-    Y = cell[1]
-    Dir = cell[2]
+line = str(maze_total) + " " + str(width) + " " + str(height) + "\n"
+for k in range(maze_total):
+    
+    pos = [[start_x,start_y]]
+    previous = [[[start_x,start_y]]]
+    new = []
+	
+    maze = [1] * width#Wall = 1 | Path = 0
+    for i in range(height):
+        maze[i] = [1] * height
 
-    if Dir == 1:
-        if X + 1 < width and maze[X][Y] == 0 and maze[X + 1][Y] == 0 and maze[X + 1][Y - 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
-            addWalls()
-    elif Dir == 2:
-        if X - 1 >  - 1 and maze[X][Y] == 0 and maze[X - 1][Y] == 0 and maze[X - 1][Y - 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X][Y - 1] == 0 and maze[X][Y + 1] == 0:
-            addWalls()
-    elif Dir == 3:
-        if Y + 1 < height and maze[X][Y] == 0 and maze[X][Y + 1] == 0 and maze[X - 1][Y + 1] == 0 and maze[X + 1][Y + 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
-            addWalls()
-    elif Dir == 4:
-        if Y - 1 >  - 1 and maze[X][Y] == 0 and maze[X][Y - 1] == 0 and maze[X - 1][Y - 1] == 0 and maze[X + 1][Y - 1] == 0 and maze[X - 1][Y] == 0 and maze[X + 1][Y] == 0:
-            addWalls()
-###############################################################REMAKE THIS ^
+    maze[start_x][start_y] = 0
 
-#Set exit
-maze[0][height - 2] = 1
-for y in range(0, height):
-    line = ''
-    for x in range(0, width):
-        if (maze[x][y] == 0):
-            line += '▮'
-        else:
-            line += ' '
-    print(line)
+    reachedEndZone = -1
+    while len(pos) > 0:
+        i = 0
+        while i < len(pos):
+            #display(maze,pos)
+            isFirst = True
+            shuffle(directions)
+            for dir in directions:
+                x,y = pos[i][0]+dir[0],pos[i][1]+dir[1]
+                if maze[x][y] == 1 and not (x == 0 or x == width-1 or y == 0 or y == height-1):
+                    nearWallCount = 0
+                    for wall in directions:
+                        nearWallCount += maze[x+wall[0]][y+wall[1]]
+                    if nearWallCount == 3 and (reachedEndZone == -1 or reachedEndZone == i or not isNear(x,y,end_x,end_y)):
+                        if isFirst:
+                            isFirst = False
+                            previous[i].append([x,y])
+                            maze[x][y] = 0
+                        elif randint(0,branch_chance) == 0 and not reachedEndZone == i:
+                            previous.append([[x,y]])
+                            new.append([x,y])
+                            maze[x][y] = 0
+                        
+            pos[i] = previous[i].pop(-1) if isFirst else previous[i][-1]
+            
+            if isNear(pos[i][0],pos[i][1],end_x,end_y):
+                reachedEndZone = i
+            if len(previous[i]) == 0 or pos[i] == previous[i][0]:
+                del pos[i]
+                del previous[i]
+            else:
+                i+=1
+        while len(new) > 0:
+            pos.append(new[0])
+            previous.append([new.pop(0)])
 
+    if maze[end_x][end_y] == 0:
+        for i in range(len(maze)):
+            for j in range(len(maze[i])):
+                line += str(maze[i][j])
+            line += "\n"
+        line += "\n"
+    
+with open(fileName, 'w') as saveFile:
+    saveFile.write(line)
+    saveFile.close()
+
+print("Done")
+               
+
+
+
+	
