@@ -1,0 +1,15 @@
+QLearning Resources:
+
+Demystifying Deep Reinforcement Learning: https://www.nervanasys.com/demystifying-deep-reinforcement-learning
+Keras plays catch, a single file Reinforcement Learning example: http://edersantana.github.io/articles/keras_rl
+Q-learning: https://en.wikipedia.org/wiki/Q-learning
+Keras plays catch - code example: https://gist.github.com/EderSantana/c7222daa328f0e885093
+Reinforcement learning using chaotic exploration in maze world: http://ieeexplore.ieee.org/document/1491636
+A Reinforcement Learning Approach Involving a Shortest Path Finding Algorithm: http://incorl.hanyang.ac.kr/xe/paper/ic/ic2003-3.pdf
+Neural Combinatorial Optimization with Reinforcement Learning: https://arxiv.org/abs/1611.09940
+Google Acquires Artificial Intelligence Startup DeepMind For More Than $500M: https://techcrunch.com/2014/01/26/google-deepmind
+How DeepMind’s Memory Trick Helps AI Learn Faster: https://www.technologyreview.com/s/603868/how-deepminds-memory-trick-helps-ai-learn-faster/?imm_mid=0ef03f&cmp=em-data-na-na-newsltr_20170320
+Methods and apparatus for reinforcement learning US 20150100530 A1 (Patent Registration): https://www.google.com/patents/US20150100530
+Introduction to Reinforcement Learning: http://www.cs.indiana.edu/~gasser/Salsa/rl.html
+Reward function and initial values: Better choices for accelerated Goal-directed reinforcement learning: https://hal.archives-ouvertes.fr/hal-00331752/document
+Andrej Karpathi blog: Deep Reinforcement Learning: Pong from Pixels: http://karpathy.github.io/2016/05/31/rl/
