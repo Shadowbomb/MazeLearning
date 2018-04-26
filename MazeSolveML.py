@@ -1,11 +1,18 @@
+print("Here 5")
 import os, sys, time, datetime, json, random
+print("Here 6")
 import numpy as np
+print("Here 7")
 from keras.models import Sequential
+print("Here 8")
 from keras.layers.core import Dense, Activation
+print("Here 9")
 from keras.optimizers import SGD , Adam, RMSprop
+print("Here 10")
 from keras.layers.advanced_activations import PReLU
-import matplotlib.pyplot as plt
+print("Here 11")
 
+print("Here 4")
 visited_mark = 0.8  # Cells visited by the rat will be painted by gray 0.8
 rat_mark = 0.5      # The current rat cell will be painteg by gray 0.5
 LEFT = 0
@@ -26,22 +33,7 @@ num_actions = len(actions_dict)
 # Exploration factor
 epsilon = 0.1
 
-def show(qmaze):
-    plt.grid('on')
-    nrows, ncols = qmaze.maze.shape
-    ax = plt.gca()
-    ax.set_xticks(np.arange(0.5, nrows, 1))
-    ax.set_yticks(np.arange(0.5, ncols, 1))
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    canvas = np.copy(qmaze.maze)
-    for row,col in qmaze.visited:
-        canvas[row,col] = 0.6
-    rat_row, rat_col, _ = qmaze.state
-    canvas[rat_row, rat_col] = 0.3   # rat cell
-    canvas[nrows-1, ncols-1] = 0.9 # cheese cell
-    img = plt.imshow(canvas, interpolation='none', cmap='gray')
-    return img
+print("Here 3")
 
 def play_game(model, qmaze, rat_cell):
     qmaze.reset(rat_cell)
@@ -206,6 +198,7 @@ def build_model(maze, lr=0.001):
 #################################################################################################
 class Experience(object):
     def __init__(self, model, max_memory=100, discount=0.95):
+        print("init Experience")
         self.model = model
         self.max_memory = max_memory
         self.discount = discount
@@ -217,7 +210,7 @@ class Experience(object):
         # memory[i] = episode
         # envstate == flattened 1d maze cells info, including rat cell (see method: observe)
         self.memory.append(episode)
-        if len(self.memory) > self.max_memory:
+        if len(self.memory) > len(self.max_memory):
             del self.memory[0]
 
     def predict(self, envstate):
@@ -262,6 +255,7 @@ class Experience(object):
 #################################################################################################
 class Qmaze(object):
     def __init__(self, maze, rat=(0,0)):
+        print("init Qmaze")
         self._maze = np.array(maze)
         nrows, ncols = self._maze.shape
         self.target = (nrows-1, ncols-1)   # target cell where the "cheese" is
@@ -404,7 +398,7 @@ class Qmaze(object):
 #################################################################################################
 #################################################################################################
 #################################################################################################
-maze = [
+maze = np.array([
     [ 1.,  0.,  1.,  1.,  1.,  1.,  1.,  1.],
     [ 1.,  0.,  1.,  1.,  1.,  0.,  1.,  1.],
     [ 1.,  1.,  1.,  1.,  0.,  1.,  0.,  1.],
@@ -413,22 +407,21 @@ maze = [
     [ 1.,  1.,  1.,  0.,  1.,  0.,  0.,  0.],
     [ 1.,  1.,  1.,  0.,  1.,  1.,  1.,  1.],
     [ 1.,  1.,  1.,  1.,  0.,  1.,  1.,  1.]
-]
-
+])
+print("Here 2")
 qmaze = Qmaze(maze)
 canvas, reward, game_over = qmaze.act(DOWN)
 print("reward=", reward)
-show(qmaze)
 
 #qmaze.act(DOWN)  # move down
 #qmaze.act(RIGHT)  # move right
 #qmaze.act(RIGHT)  # move right
 #qmaze.act(RIGHT)  # move right
 #qmaze.act(UP)  # move up
-show(qmaze)
 
+print("Here 1")
 qmaze = Qmaze(maze)
-show(qmaze)
+
 
 model = build_model(maze)
-qtrain(model, maze, epochs=1000, max_memory=8*maze.size, data_size=32)
+qtrain(model, maze, epochs=1000, max_memory=8*maze.shape, data_size=32)
