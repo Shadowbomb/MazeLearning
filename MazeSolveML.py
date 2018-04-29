@@ -84,10 +84,8 @@ def qtrain(model, maze, **opt):
     experience = Experience(model, max_memory=max_memory)
 
     win_history = []   # history of win/lose game
-    n_free_cells = len(qmaze.free_cells)
     hsize = qmaze.maze.size//2   # history window size
     win_rate = 0.0
-    imctr = 1
 
     for epoch in range(n_epoch):
         loss = 0.0
