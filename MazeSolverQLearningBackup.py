@@ -6,8 +6,8 @@ from keras.optimizers import SGD , Adam, RMSprop
 from keras.layers.advanced_activations import PReLU
 import matplotlib.pyplot as plt
 
-visited_mark = 0.8  # Cells visited by the rat will be painted by gray 0.8
-rat_mark = 0.5      # The current rat cell will be painteg by gray 0.5
+visited_mark = 0.8  # Cells visited by the current will be painted by gray 0.8
+current_mark = 0.5      # The current current cell will be painteg by gray 0.5
 LEFT = 0
 UP = 1
 RIGHT = 2
@@ -37,14 +37,14 @@ def show(qmaze):
     canvas = np.copy(qmaze.maze)
     for row,col in qmaze.visited:
         canvas[row,col] = 0.6
-    rat_row, rat_col, _ = qmaze.state
-    canvas[rat_row, rat_col] = 0.3   # rat cell
+    current_row, current_col, _ = qmaze.state
+    canvas[current_row, current_col] = 0.3   # current cell
     canvas[nrows-1, ncols-1] = 0.9 # cheese cell
     img = plt.imshow(canvas, interpolation='none', cmap='gray')
     return img
 
-def play_game(model, qmaze, rat_cell):
-    qmaze.reset(rat_cell)
+def play_game(model, qmaze, current_cell):
+    qmaze.reset(current_cell)
     envstate = qmaze.observe()
     while True:
         prev_envstate = envstate
@@ -95,8 +95,8 @@ def qtrain(model, maze, **opt):
 
     for epoch in range(n_epoch):
         loss = 0.0
-        rat_cell = random.choice(qmaze.free_cells)
-        qmaze.reset(rat_cell)
+        current_cell = random.choice(qmaze.free_cells)
+        qmaze.reset(current_cell)
         game_over = False
 
         # get initial envstate (1d flattened canvas)
@@ -145,7 +145,7 @@ def qtrain(model, maze, **opt):
     
         dt = datetime.datetime.now() - start_time
         t = format_time(dt.total_seconds())
-        template = "Epoch: {:03d}/{:d} | Loss: {:.4f} | Episodes: {:d} | Win count: {:d} | Win rate: {:.3f} | time: {}"
+        template = "Epoch: {:03d}/{:d} | Loss: {:.4f} | Episodes: {:d} | Win count: {:d} | win rate: {:.3f} | time: {}"
         print(template.format(epoch, n_epoch-1, loss, n_episodes, sum(win_history), win_rate, t))
         # we simply check if training has exhausted all free cells and if in all
         # cases the agent won
@@ -215,7 +215,7 @@ class Experience(object):
     def remember(self, episode):
         # episode = [envstate, action, reward, envstate_next, game_over]
         # memory[i] = episode
-        # envstate == flattened 1d maze cells info, including rat cell (see method: observe)
+        # envstate == flattened 1d maze cells info, including current cell (see method: observe)
         self.memory.append(episode)
         if len(self.memory) > self.max_memory:
             del self.memory[0]
@@ -244,7 +244,7 @@ class Experience(object):
         return inputs, targets
 # maze is a 2d Numpy array of floats between 0.0 to 1.0
 # 1.0 corresponds to a free cell, and 0.0 an occupied cell
-# rat = (row, col) initial rat position (defaults to (0,0))
+# current = (row, col) initial current position (defaults to (0,0))
 
 #################################################################################################
 #################################################################################################
@@ -261,7 +261,7 @@ class Experience(object):
 #################################################################################################
 #################################################################################################
 class Qmaze(object):
-    def __init__(self, maze, rat=(0,0)):
+    def __init__(self, maze, current=(0,0)):
         self._maze = np.array(maze)
         nrows, ncols = self._maze.shape
         self.target = (nrows-1, ncols-1)   # target cell where the "cheese" is
@@ -269,16 +269,16 @@ class Qmaze(object):
         self.free_cells.remove(self.target)
         if self._maze[self.target] == 0.0:
             raise Exception("Invalid maze: target cell cannot be blocked!")
-        if not rat in self.free_cells:
-            raise Exception("Invalid Rat Location: must sit on a free cell")
-        self.reset(rat)
+        if not current in self.free_cells:
+            raise Exception("Invalid current Location: must sit on a free cell")
+        self.reset(current)
 
-    def reset(self, rat):
-        self.rat = rat
+    def reset(self, current):
+        self.current = current
         self.maze = np.copy(self._maze)
         nrows, ncols = self.maze.shape
-        row, col = rat
-        self.maze[row, col] = rat_mark
+        row, col = current
+        self.maze[row, col] = current_mark
         self.state = (row, col, 'start')
         self.min_reward = -0.5 * self.maze.size
         self.total_reward = 0
@@ -286,10 +286,10 @@ class Qmaze(object):
 
     def update_state(self, action):
         nrows, ncols = self.maze.shape
-        nrow, ncol, nmode = rat_row, rat_col, mode = self.state
+        nrow, ncol, nmode = current_row, current_col, mode = self.state
 
-        if self.maze[rat_row, rat_col] > 0.0:
-            self.visited.add((rat_row, rat_col))  # mark visited cell
+        if self.maze[current_row, current_col] > 0.0:
+            self.visited.add((current_row, current_col))  # mark visited cell
 
         valid_actions = self.valid_actions()
                 
@@ -305,20 +305,20 @@ class Qmaze(object):
                 ncol += 1
             elif action == DOWN:
                 nrow += 1
-        else:                  # invalid action, no change in rat position
+        else:                  # invalid action, no change in current position
             mode = 'invalid'
 
         # new state
         self.state = (nrow, ncol, nmode)
 
     def get_reward(self):
-        rat_row, rat_col, mode = self.state
+        current_row, current_col, mode = self.state
         nrows, ncols = self.maze.shape
-        if rat_row == nrows-1 and rat_col == ncols-1:
+        if current_row == nrows-1 and current_col == ncols-1:
             return 1.0
         if mode == 'blocked':
             return self.min_reward - 1
-        if (rat_row, rat_col) in self.visited:
+        if (current_row, current_col) in self.visited:
             return -0.25
         if mode == 'invalid':
             return -0.75
@@ -346,17 +346,17 @@ class Qmaze(object):
             for c in range(ncols):
                 if canvas[r,c] > 0.0:
                     canvas[r,c] = 1.0
-        # draw the rat
+        # draw the current
         row, col, valid = self.state
-        canvas[row, col] = rat_mark
+        canvas[row, col] = current_mark
         return canvas
 
     def game_status(self):
         if self.total_reward < self.min_reward:
             return 'lose'
-        rat_row, rat_col, mode = self.state
+        current_row, current_col, mode = self.state
         nrows, ncols = self.maze.shape
-        if rat_row == nrows-1 and rat_col == ncols-1:
+        if current_row == nrows-1 and current_col == ncols-1:
             return 'win'
 
         return 'not_over'
