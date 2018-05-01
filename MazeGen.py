@@ -40,7 +40,7 @@ branch_chance = 2
 directions = [[0,-1],[1,0],[0,1],[-1,0]]
 fileName = "SuperMaze.txt"
 
-line = str(maze_total) + " " + str(width) + " " + str(height) + "\n"
+line = "" #str(maze_total) + " " + str(width) + " " + str(height) + "\n"
 k = 0
 while k < maze_total:
     
@@ -97,8 +97,8 @@ while k < maze_total:
         for i in range(len(maze)):
             for j in range(len(maze[i])):
                 line += str(maze[i][j])
+        if k < maze_total:
             line += "\n"
-        line += "\n"
     
 with open(fileName, 'w') as saveFile:
     saveFile.write(line)

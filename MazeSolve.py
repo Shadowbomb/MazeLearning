@@ -18,10 +18,9 @@ read_file_name = "SuperMaze.txt"
 write_file_name = "SolvedSuperMaze.txt"
 
 with open(read_file_name,'r') as scan:
-    line = scan.readline().split(" ")
-    maze_count = int(line[0])
-    width = int(line[1])
-    height = int(line[2])
+    maze_count = 1000
+    width = 64
+    height = 64
 
     for i in range(maze_count):
         if maze_count >= 4 and i % (maze_count/4) == 0:
@@ -31,7 +30,6 @@ with open(read_file_name,'r') as scan:
             line = []
             for k in range(width):
                 line.append(int(scan.read(1)))
-            scan.readline()
             maze.append(line)
         scan.readline()
         q = deque()
@@ -39,16 +37,16 @@ with open(read_file_name,'r') as scan:
         maze[pos[0]][pos[1]] = 1
 
         previous = [None] * width
-        for i in range(height):
-            previous[i] = [None] * height
+        for j in range(height):
+            previous[j] = [None] * height
 
         path = [0] * width
-        for i in range(height):
-            path[i] = [0] * height
+        for j in range(height):
+            path[j] = [0] * height
             
         q.append(pos)
         while q:
-            
+
             pos = q.popleft()
             if pos[0] == width-2 and pos[1] == height-2:
                     while not pos == None:
@@ -61,11 +59,11 @@ with open(read_file_name,'r') as scan:
                 if maze[new[0]][new[1]] == 0:
                     q.append(new)
                     previous[new[0]][new[1]] = pos
-        for i in range(len(path)):
-            for j in range(len(path[i])):
-                write_line += str(path[i][j])
+        for j in range(len(path)):
+            for k in range(len(path[j])):
+                write_line += str(path[j][k])
+        if i < maze_count - 1:
             write_line += "\n"
-        write_line += "\n"
 
 
     scan.close()

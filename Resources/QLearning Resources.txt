@@ -13,3 +13,6 @@ Methods and apparatus for reinforcement learning US 20150100530 A1 (Patent Regis
 Introduction to Reinforcement Learning: http://www.cs.indiana.edu/~gasser/Salsa/rl.html
 Reward function and initial values: Better choices for accelerated Goal-directed reinforcement learning: https://hal.archives-ouvertes.fr/hal-00331752/document
 Andrej Karpathi blog: Deep Reinforcement Learning: Pong from Pixels: http://karpathy.github.io/2016/05/31/rl/
+
+http://www.samyzaf.com/ML/rl/qmaze.html
+
