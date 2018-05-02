@@ -5,7 +5,7 @@ import keras
 #Load the Sequential Keras NN model
 from keras.models import Sequential
 #Load the dropout and flatten libraries and fully connected layer
-from keras.layers import Dense, Dropout, Activation
+from keras.layers import Dense, Dropout, Activation, LeakyReLU
 #Custom activation function and things
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils import CustomObjectScope
@@ -44,15 +44,18 @@ def read(file_name,firstLength,nextLength):
 
 
 #Defining custom activation function
-class Threshold(Activation):
-    def __init__(self, activation, **kwargs):
-        super(Threshold, self).__init__(activation, **kwargs)
-        self.__name__ = "Threshold"
-    def threshold(X):
-        X = tf.sign(X)
-        return tf.nn.leaky_relu(X)
-
-get_custom_objects().update({'Threshold': Threshold(Threshold.threshold)})
+# class Threshold(Activation):
+#     def __init__(self, activation, **kwargs):
+#         super(Threshold, self).__init__(activation, **kwargs)
+#         self.__name__ = "Threshold"
+#     #Activation function: threshold
+#     def threshold(X):
+#         X = tf.nn.leaky_relu(X)
+#         return tf.cast(X, tf.float32)
+#get_custom_objects().update({'Threshold': Threshold(Threshold.threshold)})
+def Threshold(X):
+    return tf.nn.leaky_relu(X)
+get_custom_objects().update({'Threshold': Activation(Threshold)})
 
 #Save model
 def save_keras_model(model, model_file_name, weight_file_name):
@@ -67,11 +70,25 @@ def load_keras_model(model_file_name, weight_file_name):
     model_file = open(model_file_name, 'r')
     model_structure = model_file.read()
     model_file.close()
-    model = model_from_yaml(model_structure, custom_objects={'Threshold': Threshold(Threshold.threshold)})
+    model = model_from_yaml(model_structure, custom_objects = {'Threshold': Activation(Threshold)})
     # load weights into new model
     model.load_weights(weight_file_name)
     print("Loaded model from disk")
     return model
+#Build model
+def build_keras_model():
+    #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
+    model = Sequential()
+    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
+    model.add(Dense(io_layer, input_shape = (io_layer,)))
+    model.add(Activation(Threshold))
+    model.add(Dense(io_layer))
+    model.add(Activation(Threshold))
+    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
+    model.add(Dense(io_layer))
+    model.add(Activation(Threshold))
+    return model
+
 
 width = 10
 height = 10
@@ -94,7 +111,7 @@ model_file_name = "model.yaml"
 weight_file_name = "model.h5"
 
 #generate(width,height,maze_total,fileName=train_file_name)
-solve(width,height,maze_total,read_file_name = train_file_name,write_file_name = evaluate_file_name)
+#solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
 
 #Load the data, split between training and testing sets
 x_train,x_test = read(train_file_name,train_count,test_count)
@@ -117,22 +134,14 @@ y_test = y_test.astype('float32')
 if Path(model_file_name).exists():
     model = load_keras_model(model_file_name, weight_file_name)
 else:
-    #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
-    model = Sequential()
-    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
-    model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
-    model.add(Dense(io_layer, activation = 'sigmoid'))
-    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
-    model.add(Dense(io_layer))
-    model.add(Activation(Threshold))
+    model = build_keras_model()
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
-model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.Adadelta(), metrics = ['accuracy'])
-
+model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.SGD(), metrics = ['accuracy'])
 #Fit model to data over ___ epochs with batch size size of ___ and validate against x data and y labels
 model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (x_test, y_test))
 #Evaluate accuracy of model using x test data and y test labels
-score = model.evaluate(x_test, y_test, verbose = 0)
+score = model.evaluate(x_test, y_test, verbose = 1)
 
 #Print results of loss and accuracy
 print('Test loss:', score[0])

@@ -3,7 +3,7 @@ class_name: Sequential
 config:
 - class_name: Dense
   config:
-    activation: sigmoid
+    activation: linear
     activity_regularizer: null
     batch_input_shape: !!python/tuple [null, 100]
     bias_constraint: null
@@ -21,9 +21,11 @@ config:
     trainable: true
     units: 100
     use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_2, trainable: true}
 - class_name: Dense
   config:
-    activation: sigmoid
+    activation: linear
     activity_regularizer: null
     bias_constraint: null
     bias_initializer:
@@ -39,6 +41,8 @@ config:
     trainable: true
     units: 100
     use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_3, trainable: true}
 - class_name: Dense
   config:
     activation: linear
@@ -58,5 +62,5 @@ config:
     units: 100
     use_bias: true
 - class_name: Activation
-  config: {activation: Threshold, name: activation_2, trainable: true}
+  config: {activation: Threshold, name: activation_4, trainable: true}
 keras_version: 2.1.5
