@@ -6,6 +6,8 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 #Custom activation function
 from keras.utils.generic_utils import get_custom_objects
+#import model loader
+from keras.models import model_from_yaml
 #Load Keras backend
 from keras import backend as K
 #Need tensorflow for custom activation fucntion
@@ -52,7 +54,8 @@ epochs = 1
 train_file_name = "SuperMaze.txt"
 evaluate_file_name = "SolvedSuperMaze.txt"
 predict_file_name = "PredictSuperMaze.txt"
-model_file_name = "model.h5"
+model_file_name = "model.yaml"
+weight_file_name = "modelh5"
 
 #generate(width,height,maze_total,fileName=train_file_name)
 solve(width,height,maze_total,read_file_name = train_file_name,write_file_name = evaluate_file_name)
@@ -82,23 +85,22 @@ get_custom_objects().update({'Threshold': Activation(Threshold)})
 
 
 # load YAML and create model
-if (model_file_name):
-    yaml_file = open(model_file_name, 'r')
-    loaded_model_yaml = yaml_file.read()
-    yaml_file.close()
-    model = model_from_yaml(loaded_model_yaml)
-    # load weights into new model
-    model.load_weights("model.h5")
-    print("Loaded model from disk")
-else:
-    #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
-    model = Sequential()
-    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
-    model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
-    model.add(Dense(io_layer, activation = 'sigmoid'))
-    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
-    model.add(Dense(io_layer))
-    model.add(Activation(Threshold))
+yaml_file = open(model_file_name, 'r')
+loaded_model_yaml = yaml_file.read()
+yaml_file.close()
+model = model_from_yaml(loaded_model_yaml)
+# load weights into new model
+model.load_weights(weight_file_name)
+print("Loaded model from disk")
+
+#Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
+model = Sequential()
+#Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
+model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
+model.add(Dense(io_layer, activation = 'sigmoid'))
+#Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
+model.add(Dense(io_layer))
+model.add(Activation(Threshold))
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
 model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.Adadelta(), metrics = ['accuracy'])
@@ -113,12 +115,11 @@ print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
 #Save model
-# serialize model to YAML
 model_yaml = model.to_yaml()
-with open("model.yaml", "w") as yaml_file:
+with open(model_file_name, "w") as yaml_file:
     yaml_file.write(model_yaml)
 # serialize weights to HDF5
-model.save_weights("model.h5")
+model.save_weights(weight_file_name)
 print("Saved model to disk")
 
 result = model.predict(x_test)
