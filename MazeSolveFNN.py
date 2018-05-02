@@ -11,6 +11,8 @@ from keras.optimizers import Adam
 #Custom activation function and things
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils import CustomObjectScope
+#Loss functions
+from keras import losses
 #import model loader
 from keras.models import model_from_yaml
 #Load Keras backend
@@ -24,6 +26,38 @@ import numpy as np
 #Custom imports
 from MazeGen import generate
 from MazeSolve import solve
+
+#Control Variables
+#File names
+train_file_name = "SuperMaze.txt"
+evaluate_file_name = "SolvedSuperMaze.txt"
+predict_file_name = "PredictSuperMaze.txt"
+model_file_name = "model.yaml"
+weight_file_name = "model.h5"
+
+#Maze width
+width = 15
+#Maze height
+height = 15
+#Total number of mazes
+maze_total = 150000
+#Regenerate and Resolve?
+recreate = False
+#Train
+train_model = True
+#Present
+present_model = True
+
+io_layer = width * height
+train_percent = 0.95
+train_count = int(train_percent * maze_total)
+test_count = int(maze_total - train_count)
+
+#Batch processed each step before updating weights, minibatch(batch < dataset && batch > 1)
+batch_size = 10
+#Number of epochs to train for(epoch = 1 complete iteration over data)
+epochs = 5
+
 
 #Function for reading mazes: PANDAS SUCKS
 def read(file_name,firstLength,nextLength):
@@ -44,20 +78,20 @@ def read(file_name,firstLength,nextLength):
             nextMaze.append(maze)
     return np.array(firstMaze),np.array(nextMaze)
 
-
 #Defining custom activation function
-# class Threshold(Activation):
-#     def __init__(self, activation, **kwargs):
-#         super(Threshold, self).__init__(activation, **kwargs)
-#         self.__name__ = "Threshold"
-#     #Activation function: threshold
-#     def threshold(X):
-#         X = tf.nn.leaky_relu(X)
-#         return tf.cast(X, tf.float32)
-#get_custom_objects().update({'Threshold': Threshold(Threshold.threshold)})
-def Threshold(X):
-    return tf.nn.leaky_relu(X)
-get_custom_objects().update({'Threshold': Activation(Threshold)})
+class Threshold(Activation):
+    def __init__(self, activation, **kwargs):
+        super(Threshold, self).__init__(activation, **kwargs)
+        self.__name__ = "Threshold"
+    #Activation function: threshold
+    def threshold(X):
+        X = tf.nn.leaky_relu(X)
+        return tf.cast(X, tf.float32)
+get_custom_objects().update({'Threshold': Threshold(Threshold.threshold)})
+#Original custom actvation function (Unsaveable)
+# def Threshold(X):
+#     return tf.nn.leaky_relu(X)
+# get_custom_objects().update({'Threshold': Activation(Threshold)})
 
 #Save model
 def save_keras_model(model, model_file_name, weight_file_name):
@@ -72,7 +106,7 @@ def load_keras_model(model_file_name, weight_file_name):
     model_file = open(model_file_name, 'r')
     model_structure = model_file.read()
     model_file.close()
-    model = model_from_yaml(model_structure, custom_objects = {'Threshold': Activation(Threshold)})
+    model = model_from_yaml(model_structure, custom_objects = {'Threshold': Threshold(Threshold.threshold)})
     # load weights into new model
     model.load_weights(weight_file_name)
     print("Loaded model from disk")
@@ -83,62 +117,35 @@ def build_keras_model(io_layer):
     model = Sequential()
     #Fully Connected Layer: Input Layer
     model.add(Dense(io_layer, input_shape = (io_layer,)))
-    model.add(Activation(Threshold))
+    model.add(Activation(Threshold.threshold))
     #Fully Connected Layer: Hidden Layer #1
-    model.add(Dense(io_layer * 2))
-    model.add(Activation(Threshold))
-    model.add(Dropout(0.03))
-    #Fully Connected Layer: Hidden Layer #2
     model.add(Dense(io_layer * 4))
-    model.add(Activation(Threshold))
-    model.add(Dropout(0.07))
+    model.add(Activation(Threshold.threshold))
+    #Fully Connected Layer: Hidden Layer #2
+    model.add(Dense(io_layer * 8))
+    model.add(Activation(Threshold.threshold))
     #Fully Connected Layer: Hidden Layer #3
-    model.add(Dense(io_layer * 6))
-    model.add(Activation(Threshold))
-    model.add(Dropout(0.2))
+    model.add(Dense(io_layer * 16))
+    model.add(Activation(Threshold.threshold))
+    model.add(Dropout(0.15))
     #Fully Connected Layer: Hidden Layer #4
-    model.add(Dense(io_layer * 5))
-    model.add(Activation(Threshold))
-    model.add(Dropout(0.098))
+    model.add(Dense(io_layer * 4))
+    model.add(Activation(Threshold.threshold))
+    model.add(Dropout(0.004))
     #Fully Connected Layer: Hidden Layer #5
-    model.add(Dense(io_layer * 3))
-    model.add(Activation(Threshold))
+    model.add(Dense(io_layer * 2))
+    model.add(Activation(Threshold.threshold))
     model.add(Dropout(0.001))
     #Fully Connected Layer: Output Layer
     model.add(Dense(io_layer))
-    model.add(Activation(Threshold))
+    model.add(Activation(Threshold.threshold))
     return model
-
-#File names
-train_file_name = "SuperMaze.txt"
-evaluate_file_name = "SolvedSuperMaze.txt"
-predict_file_name = "PredictSuperMaze.txt"
-model_file_name = "model.yaml"
-weight_file_name = "model.h5"
-
-#Maze width
-width = 30
-#Maze height
-height = 30
-#Total number of mazes
-maze_total = 150000
-#Regenerate and Resolve?
-recreate = True
-
-io_layer = width * height
-train_percent = 0.94
-train_count = int(train_percent * maze_total)
-test_count = int(maze_total - train_count)
-
-#Batch processed each step before updating weights, minibatch(batch < dataset && batch > 1)
-batch_size = 50
-#Number of epochs to train for(epoch = 1 complete iteration over data)
-epochs = 5
 
 #NEEDS TO RUN IF YOU CHANGE width, height, or maze_total
 if (recreate):
     generate(width,height,maze_total,fileName=train_file_name)
-    solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
+    solve(width, height, maze_total,
+    read_file_name = train_file_name, write_file_name = evaluate_file_name)
 
 #Load the data, split between training and testing sets
 x_train,x_test = read(train_file_name,train_count,test_count)
@@ -148,13 +155,13 @@ y_train,y_test = read(evaluate_file_name,train_count,test_count)
 print('y_train shape:', y_train.shape)
 print('y_test shape:', y_test.shape)
 
-#Keras allows data type specification which can cause speedup over "loose" types in python : float64
+#Keras allows data type specification which can cause speedup over "loose" types in python : float64 might upscale to
 #Casting x datasets into defined size
-x_train = x_train.astype('float16')
-x_test = x_test.astype('float16')
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
 #Casting y datasets into defined size
-y_train = y_train.astype('float16')
-y_test = y_test.astype('float16')
+y_train = y_train.astype('float32')
+y_test = y_test.astype('float32')
 
 
 # load YAML and create model
@@ -164,34 +171,38 @@ else:
     model = build_keras_model(io_layer)
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
-model.compile(loss = keras.losses.categorical_crossentropy,
+model.compile(loss = 'mean_squared_error',
     optimizer =
-        Adam(lr = 0.0001, beta_1 = 0.917, beta_2 = 0.9989,
+        Adam(lr = 0.001, beta_1 = 0.902, beta_2 = 0.9998,
             epsilon = None, decay = 0.0, amsgrad = True),
     metrics = ['accuracy'])
-#Fit model to data over ___ epochs with batch size size of ___ and validate against x data and y labels
-model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs,
-    verbose = 1, validation_data = (x_test, y_test))
-#Evaluate accuracy of model using x test data and y test labels
-score = model.evaluate(x_test, y_test, verbose = 1)
 
-#Print results of loss and accuracy
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
+#Train model
+if train_model:
+    #Fit model to data over ___ epochs with batch size size of ___ and validate against x data and y labels
+    model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs,
+        verbose = 1, validation_data = (x_test, y_test))
+    #Evaluate accuracy of model using x test data and y test labels
+    score = model.evaluate(x_test, y_test, verbose = 1)
 
-#Save model
-save_keras_model(model, model_file_name, weight_file_name)
+    #Print results of loss and accuracy
+    print('Test loss:', score[0])
+    print('Test accuracy:', score[1])
 
-result = model.predict(x_test)
-result[np.where(result > 0.5)] = 1
-result[np.where(result <= 0.5)] = 0
-result = result.astype(int)
-print(result.shape)
-def plotImage(image):
-    image = image.reshape(width,height)
-    fig = plt.imshow(image)
-    fig.axes.get_xaxis().set_visible(False)
-    fig.axes.get_yaxis().set_visible(False)
-    plt.show()
-# plotImage(result[0])
-np.savetxt(fname=predict_file_name,X=result, fmt="%s",delimiter=" " )
+    #Save model
+    save_keras_model(model, model_file_name, weight_file_name)
+#Present model
+if present_model:
+    result = model.predict(x_test)
+    result[np.where(result > 0.5)] = 1
+    result[np.where(result <= 0.5)] = 0
+    result = result.astype(int)
+    print(result.shape)
+    def plotImage(image):
+        image = image.reshape(width,height)
+        fig = plt.imshow(image)
+        fig.axes.get_xaxis().set_visible(False)
+        fig.axes.get_yaxis().set_visible(False)
+        plt.show()
+    plotImage(result[0])
+    #np.savetxt(fname=predict_file_name,X=result, fmt="%s",delimiter=" " )
