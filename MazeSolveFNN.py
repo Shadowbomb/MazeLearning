@@ -87,21 +87,21 @@ def build_keras_model(io_layer):
     #Fully Connected Layer: Hidden Layer #1
     model.add(Dense(io_layer * 2))
     model.add(Activation(Threshold))
-    model.add(Dropout(0.05))
+    model.add(Dropout(0.03))
     #Fully Connected Layer: Hidden Layer #2
-    model.add(Dense(io_layer * 3))
+    model.add(Dense(io_layer * 4))
     model.add(Activation(Threshold))
     model.add(Dropout(0.07))
     #Fully Connected Layer: Hidden Layer #3
-    model.add(Dense(io_layer * 4))
+    model.add(Dense(io_layer * 6))
     model.add(Activation(Threshold))
-    model.add(Dropout(0.15))
+    model.add(Dropout(0.2))
     #Fully Connected Layer: Hidden Layer #4
-    model.add(Dense(io_layer * 3))
+    model.add(Dense(io_layer * 5))
     model.add(Activation(Threshold))
-    model.add(Dropout(0.09))
+    model.add(Dropout(0.098))
     #Fully Connected Layer: Hidden Layer #5
-    model.add(Dense(io_layer * 2))
+    model.add(Dense(io_layer * 3))
     model.add(Activation(Threshold))
     model.add(Dropout(0.001))
     #Fully Connected Layer: Output Layer
@@ -117,25 +117,25 @@ model_file_name = "model.yaml"
 weight_file_name = "model.h5"
 
 #Maze width
-width = 15
+width = 30
 #Maze height
-height = 15
+height = 30
 #Total number of mazes
 maze_total = 150000
 #Regenerate and Resolve?
-recreate = False
+recreate = True
 
 io_layer = width * height
-train_percent = 0.95
+train_percent = 0.94
 train_count = int(train_percent * maze_total)
 test_count = int(maze_total - train_count)
 
 #Batch processed each step before updating weights, minibatch(batch < dataset && batch > 1)
-batch_size = 25
+batch_size = 50
 #Number of epochs to train for(epoch = 1 complete iteration over data)
-epochs = 1
+epochs = 5
 
-#RUN IF YOU CHANGE width, height, or maze_total
+#NEEDS TO RUN IF YOU CHANGE width, height, or maze_total
 if (recreate):
     generate(width,height,maze_total,fileName=train_file_name)
     solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
@@ -166,10 +166,12 @@ else:
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
 model.compile(loss = keras.losses.categorical_crossentropy,
     optimizer =
-        Adam(lr = 0.001, beta_1 = 0.912, beta_2 = 0.9997, epsilon = None, decay = 0.00001, amsgrad = True),
+        Adam(lr = 0.0001, beta_1 = 0.917, beta_2 = 0.9989,
+            epsilon = None, decay = 0.0, amsgrad = True),
     metrics = ['accuracy'])
 #Fit model to data over ___ epochs with batch size size of ___ and validate against x data and y labels
-model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (x_test, y_test))
+model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs,
+    verbose = 1, validation_data = (x_test, y_test))
 #Evaluate accuracy of model using x test data and y test labels
 score = model.evaluate(x_test, y_test, verbose = 1)
 
