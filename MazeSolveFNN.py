@@ -12,7 +12,7 @@ from keras import backend as K
 import tensorflow as tf
 #Numpy for arrays and useful things unlike pandas
 import numpy as np
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 from MazeGen import generate
 from MazeSolve import solve
@@ -52,20 +52,15 @@ epochs = 1
 train_file_name = "SuperMaze.txt"
 evaluate_file_name = "SolvedSuperMaze.txt"
 predict_file_name = "PredictSuperMaze.txt"
+model_file_name = "model.h5"
 
 #generate(width,height,maze_total,fileName=train_file_name)
 solve(width,height,maze_total,read_file_name = train_file_name,write_file_name = evaluate_file_name)
 
-#Load the data, split between training and testing sets from MNIST(half of MNIST for training and half for testing)
-
-
-
-
-
+#Load the data, split between training and testing sets
 x_train,x_test = read(train_file_name,train_count,test_count)
 print('x_train shape:', x_train.shape)
 print('x_test shape:', x_test.shape)
-
 y_train,y_test = read(evaluate_file_name,train_count,test_count)
 print('y_train shape:', y_train.shape)
 print('y_test shape:', y_test.shape)
@@ -85,14 +80,25 @@ def Threshold(x):
     return tf.where(cond, tf.constant(1.0), tf.constant(0.0))
 get_custom_objects().update({'Threshold': Activation(Threshold)})
 
-#Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
-model = Sequential()
-#Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
-model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
-model.add(Dense(io_layer, activation = 'sigmoid'))
-#Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
-model.add(Dense(io_layer))
-model.add(Activation(Threshold))
+
+# load YAML and create model
+if (model_file_name):
+    yaml_file = open(model_file_name, 'r')
+    loaded_model_yaml = yaml_file.read()
+    yaml_file.close()
+    model = model_from_yaml(loaded_model_yaml)
+    # load weights into new model
+    model.load_weights("model.h5")
+    print("Loaded model from disk")
+else:
+    #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
+    model = Sequential()
+    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
+    model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
+    model.add(Dense(io_layer, activation = 'sigmoid'))
+    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
+    model.add(Dense(io_layer))
+    model.add(Activation(Threshold))
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
 model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.Adadelta(), metrics = ['accuracy'])
@@ -106,6 +112,15 @@ score = model.evaluate(x_test, y_test, verbose = 0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
+#Save model
+# serialize model to YAML
+model_yaml = model.to_yaml()
+with open("model.yaml", "w") as yaml_file:
+    yaml_file.write(model_yaml)
+# serialize weights to HDF5
+model.save_weights("model.h5")
+print("Saved model to disk")
+
 result = model.predict(x_test)
 result[np.where(result > 0.5)] = 1
 result[np.where(result <= 0.5)] = 0
@@ -117,5 +132,5 @@ def plotImage(image):
     fig.axes.get_xaxis().set_visible(False)
     fig.axes.get_yaxis().set_visible(False)
     plt.show()
-plotImage(result[0])
+# plotImage(result[0])
 np.savetxt(fname=predict_file_name,X=result, fmt="%s",delimiter=" " )
