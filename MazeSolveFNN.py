@@ -85,18 +85,23 @@ def build_keras_model(io_layer):
     #Fully Connected Layer: Hidden Layer #1
     model.add(Dense(io_layer * 2))
     model.add(Activation(Threshold))
+    model.add(Dropout(0.05))
     #Fully Connected Layer: Hidden Layer #2
     model.add(Dense(io_layer * 3))
     model.add(Activation(Threshold))
+    model.add(Dropout(0.07))
     #Fully Connected Layer: Hidden Layer #3
     model.add(Dense(io_layer * 4))
     model.add(Activation(Threshold))
+    model.add(Dropout(0.15))
     #Fully Connected Layer: Hidden Layer #4
     model.add(Dense(io_layer * 3))
     model.add(Activation(Threshold))
+    model.add(Dropout(0.09))
     #Fully Connected Layer: Hidden Layer #5
     model.add(Dense(io_layer * 2))
     model.add(Activation(Threshold))
+    model.add(Dropout(0.001))
     #Fully Connected Layer: Output Layer
     model.add(Dense(io_layer))
     model.add(Activation(Threshold))
@@ -110,25 +115,28 @@ model_file_name = "model.yaml"
 weight_file_name = "model.h5"
 
 #Maze width
-width = 10
+width = 30
 #Maze height
-height = 10
+height = 30
 #Total number of mazes
-maze_total = 100000
+maze_total = 150000
+#Regenerate and Resolve?
+recreate = True
 
 io_layer = width * height
-train_percent = 0.9
+train_percent = 0.95
 train_count = int(train_percent * maze_total)
 test_count = int(maze_total - train_count)
 
 #Batch processed each step before updating weights, minibatch(batch < dataset && batch > 1)
-batch_size = 10
+batch_size = 25
 #Number of epochs to train for(epoch = 1 complete iteration over data)
 epochs = 1
 
 #RUN IF YOU CHANGE width, height, or maze_total
-#generate(width,height,maze_total,fileName=train_file_name)
-#solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
+if (recreate):
+    generate(width,height,maze_total,fileName=train_file_name)
+    solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
 
 #Load the data, split between training and testing sets
 x_train,x_test = read(train_file_name,train_count,test_count)
