@@ -76,23 +76,45 @@ def load_keras_model(model_file_name, weight_file_name):
     print("Loaded model from disk")
     return model
 #Build model
-def build_keras_model():
+def build_keras_model(io_layer):
     #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
     model = Sequential()
-    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
+    #Fully Connected Layer: Input Layer
     model.add(Dense(io_layer, input_shape = (io_layer,)))
     model.add(Activation(Threshold))
-    model.add(Dense(io_layer))
+    #Fully Connected Layer: Hidden Layer #1
+    model.add(Dense(io_layer * 2))
     model.add(Activation(Threshold))
-    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
+    #Fully Connected Layer: Hidden Layer #2
+    model.add(Dense(io_layer * 3))
+    model.add(Activation(Threshold))
+    #Fully Connected Layer: Hidden Layer #3
+    model.add(Dense(io_layer * 4))
+    model.add(Activation(Threshold))
+    #Fully Connected Layer: Hidden Layer #4
+    model.add(Dense(io_layer * 3))
+    model.add(Activation(Threshold))
+    #Fully Connected Layer: Hidden Layer #5
+    model.add(Dense(io_layer * 2))
+    model.add(Activation(Threshold))
+    #Fully Connected Layer: Output Layer
     model.add(Dense(io_layer))
     model.add(Activation(Threshold))
     return model
 
+#File names
+train_file_name = "SuperMaze.txt"
+evaluate_file_name = "SolvedSuperMaze.txt"
+predict_file_name = "PredictSuperMaze.txt"
+model_file_name = "model.yaml"
+weight_file_name = "model.h5"
 
+#Maze width
 width = 10
+#Maze height
 height = 10
-maze_total = 1000
+#Total number of mazes
+maze_total = 100000
 
 io_layer = width * height
 train_percent = 0.9
@@ -104,12 +126,7 @@ batch_size = 10
 #Number of epochs to train for(epoch = 1 complete iteration over data)
 epochs = 1
 
-train_file_name = "SuperMaze.txt"
-evaluate_file_name = "SolvedSuperMaze.txt"
-predict_file_name = "PredictSuperMaze.txt"
-model_file_name = "model.yaml"
-weight_file_name = "model.h5"
-
+#RUN IF YOU CHANGE width, height, or maze_total
 #generate(width,height,maze_total,fileName=train_file_name)
 #solve(width, height, maze_total, read_file_name = train_file_name, write_file_name = evaluate_file_name)
 
@@ -123,18 +140,18 @@ print('y_test shape:', y_test.shape)
 
 #Keras allows data type specification which can cause speedup over "loose" types in python : float64
 #Casting x datasets into defined size
-x_train = x_train.astype('float32')
-x_test = x_test.astype('float32')
+x_train = x_train.astype('float16')
+x_test = x_test.astype('float16')
 #Casting y datasets into defined size
-y_train = y_train.astype('float32')
-y_test = y_test.astype('float32')
+y_train = y_train.astype('float16')
+y_test = y_test.astype('float16')
 
 
 # load YAML and create model
 if Path(model_file_name).exists():
     model = load_keras_model(model_file_name, weight_file_name)
 else:
-    model = build_keras_model()
+    model = build_keras_model(io_layer)
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
 model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.SGD(), metrics = ['accuracy'])
