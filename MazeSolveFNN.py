@@ -1,3 +1,5 @@
+#Python native
+from pathlib import Path
 #Load Keras
 import keras
 #Load the Sequential Keras NN model
@@ -16,9 +18,11 @@ import tensorflow as tf
 import numpy as np
 #from matplotlib import pyplot as plt
 
+#Custom imports
 from MazeGen import generate
 from MazeSolve import solve
 
+#Function for reading mazes: PANDAS SUCKS
 def read(file_name,firstLength,nextLength):
     with open(file_name,'r') as scan:
         firstMaze = []
@@ -36,6 +40,24 @@ def read(file_name,firstLength,nextLength):
             scan.readline()
             nextMaze.append(maze)
     return np.array(firstMaze),np.array(nextMaze)
+#Save model
+def save_keras_model(model, model_file_name, weight_file_name):
+    model_structure = model.to_yaml()
+    with open(model_file_name, "w") as model_file:
+        model_file.write(model_structure)
+    # serialize weights to HDF5
+    model.save_weights(weight_file_name)
+    print("Saved model to disk")
+#Load Model
+def load_keras_model(model_file_name, weight_file_name):
+    model_file = open(model_file_name, 'r')
+    model_structure = model_file.read()
+    model_file.close()
+    model = model_from_yaml(model_structure)
+    # load weights into new model
+    model.load_weights(weight_file_name)
+    print("Loaded model from disk")
+    return model
 
 width = 10
 height = 10
@@ -55,7 +77,7 @@ train_file_name = "SuperMaze.txt"
 evaluate_file_name = "SolvedSuperMaze.txt"
 predict_file_name = "PredictSuperMaze.txt"
 model_file_name = "model.yaml"
-weight_file_name = "modelh5"
+weight_file_name = "model.h5"
 
 #generate(width,height,maze_total,fileName=train_file_name)
 solve(width,height,maze_total,read_file_name = train_file_name,write_file_name = evaluate_file_name)
@@ -85,22 +107,17 @@ get_custom_objects().update({'Threshold': Activation(Threshold)})
 
 
 # load YAML and create model
-yaml_file = open(model_file_name, 'r')
-loaded_model_yaml = yaml_file.read()
-yaml_file.close()
-model = model_from_yaml(loaded_model_yaml)
-# load weights into new model
-model.load_weights(weight_file_name)
-print("Loaded model from disk")
-
-#Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
-model = Sequential()
-#Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
-model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
-model.add(Dense(io_layer, activation = 'sigmoid'))
-#Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
-model.add(Dense(io_layer))
-model.add(Activation(Threshold))
+if Path(model_file_name).exists():
+    model = load_keras_model(model_file_name, weight_file_name)
+else:
+    #Initialize and create a Sequential model, it is a linear stack of layers you can pass to contructor to build
+    model = Sequential()
+    #Fully Connected Layer 1, uses io_layer nodes and ReLu function for activation, outputs io_layer nodes
+    model.add(Dense(io_layer, input_shape = (io_layer,), activation = 'sigmoid'))
+    model.add(Dense(io_layer, activation = 'sigmoid'))
+    #Fully Connected Layer 2, output layer which contains total number of outputs(classes) and softmax activation function
+    model.add(Dense(io_layer))
+    model.add(Activation(Threshold))
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
 model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.Adadelta(), metrics = ['accuracy'])
@@ -115,12 +132,7 @@ print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
 #Save model
-model_yaml = model.to_yaml()
-with open(model_file_name, "w") as yaml_file:
-    yaml_file.write(model_yaml)
-# serialize weights to HDF5
-model.save_weights(weight_file_name)
-print("Saved model to disk")
+save_keras_model(model, model_file_name, weight_file_name)
 
 result = model.predict(x_test)
 result[np.where(result > 0.5)] = 1
