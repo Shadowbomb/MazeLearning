@@ -6,8 +6,9 @@ import keras
 from keras.models import Sequential
 #Load the dropout and flatten libraries and fully connected layer
 from keras.layers import Dense, Dropout, Activation
-#Custom activation function
+#Custom activation function and things
 from keras.utils.generic_utils import get_custom_objects
+from keras.utils import CustomObjectScope
 #import model loader
 from keras.models import model_from_yaml
 #Load Keras backend
@@ -40,6 +41,19 @@ def read(file_name,firstLength,nextLength):
             scan.readline()
             nextMaze.append(maze)
     return np.array(firstMaze),np.array(nextMaze)
+
+
+#Defining custom activation function
+class Threshold(Activation):
+    def __init__(self, activation, **kwargs):
+        super(Threshold, self).__init__(activation, **kwargs)
+        self.__name__ = "Threshold"
+    def threshold(X):
+        X = tf.sign(X)
+        return tf.nn.leaky_relu(X)
+
+get_custom_objects().update({'Threshold': Threshold(Threshold.threshold)})
+
 #Save model
 def save_keras_model(model, model_file_name, weight_file_name):
     model_structure = model.to_yaml()
@@ -53,7 +67,7 @@ def load_keras_model(model_file_name, weight_file_name):
     model_file = open(model_file_name, 'r')
     model_structure = model_file.read()
     model_file.close()
-    model = model_from_yaml(model_structure)
+    model = model_from_yaml(model_structure, custom_objects={'Threshold': Threshold(Threshold.threshold)})
     # load weights into new model
     model.load_weights(weight_file_name)
     print("Loaded model from disk")
@@ -92,18 +106,11 @@ print('y_test shape:', y_test.shape)
 
 #Keras allows data type specification which can cause speedup over "loose" types in python : float64
 #Casting x datasets into defined size
-x_train = x_train.astype('float64')
-x_test = x_test.astype('float64')
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
 #Casting y datasets into defined size
-y_train = y_train.astype('float64')
-y_test = y_test.astype('float64')
-
-#Defining custom activation function
-def Threshold(x):
-    return (K.sigmoid(x) * 5) - 1
-    cond = tf.greater_equal(x, tf.constant(0.5))
-    return tf.where(cond, tf.constant(1.0), tf.constant(0.0))
-get_custom_objects().update({'Threshold': Activation(Threshold)})
+y_train = y_train.astype('float32')
+y_test = y_test.astype('float32')
 
 
 # load YAML and create model
