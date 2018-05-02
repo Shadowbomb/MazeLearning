@@ -6,6 +6,8 @@ import keras
 from keras.models import Sequential
 #Load the dropout and flatten libraries and fully connected layer
 from keras.layers import Dense, Dropout, Activation, LeakyReLU
+#Optimizers
+from keras.optimizers import Adam
 #Custom activation function and things
 from keras.utils.generic_utils import get_custom_objects
 from keras.utils import CustomObjectScope
@@ -115,13 +117,13 @@ model_file_name = "model.yaml"
 weight_file_name = "model.h5"
 
 #Maze width
-width = 30
+width = 15
 #Maze height
-height = 30
+height = 15
 #Total number of mazes
 maze_total = 150000
 #Regenerate and Resolve?
-recreate = True
+recreate = False
 
 io_layer = width * height
 train_percent = 0.95
@@ -162,7 +164,10 @@ else:
     model = build_keras_model(io_layer)
 
 #Build model, use crossentropy for loss calculation and the Adadelta optimizer for optimizing processing
-model.compile(loss = keras.losses.categorical_crossentropy, optimizer = keras.optimizers.SGD(), metrics = ['accuracy'])
+model.compile(loss = keras.losses.categorical_crossentropy,
+    optimizer =
+        Adam(lr = 0.001, beta_1 = 0.912, beta_2 = 0.9997, epsilon = None, decay = 0.00001, amsgrad = True),
+    metrics = ['accuracy'])
 #Fit model to data over ___ epochs with batch size size of ___ and validate against x data and y labels
 model.fit(x_train, y_train, batch_size = batch_size, epochs = epochs, verbose = 1, validation_data = (x_test, y_test))
 #Evaluate accuracy of model using x test data and y test labels
