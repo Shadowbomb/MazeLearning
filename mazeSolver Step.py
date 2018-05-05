@@ -6,7 +6,7 @@ from keras.optimizers import Adam
 from keras import backend as K
 import tensorflow as tf
 import numpy as np
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 from MazeGen import generate
 from MazeSolve import solve
@@ -18,10 +18,10 @@ predict_file_name = "PredictSuperMaze.txt"
 model_file_name = "model.yaml"
 weight_file_name = "model.h5"
 
-width = 15
-height = 15
+width = 1000
+height = 1000
 maze_total = 100
-recreate = False
+recreate = True
 directions = [[1,0],[0,1],[-1,0],[0,-1]]
 
 io_layer = width * height - 1
