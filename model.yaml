@@ -1,0 +1,156 @@
+backend: tensorflow
+class_name: Sequential
+config:
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    batch_input_shape: !!python/tuple [null, 100]
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    dtype: float32
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_1
+    trainable: true
+    units: 100
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_2, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_2
+    trainable: true
+    units: 200
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_3, trainable: true}
+- class_name: Dropout
+  config: {name: dropout_1, noise_shape: null, rate: 0.03, seed: null, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_3
+    trainable: true
+    units: 400
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_4, trainable: true}
+- class_name: Dropout
+  config: {name: dropout_2, noise_shape: null, rate: 0.07, seed: null, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_4
+    trainable: true
+    units: 600
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_5, trainable: true}
+- class_name: Dropout
+  config: {name: dropout_3, noise_shape: null, rate: 0.2, seed: null, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_5
+    trainable: true
+    units: 500
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_6, trainable: true}
+- class_name: Dropout
+  config: {name: dropout_4, noise_shape: null, rate: 0.098, seed: null, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_6
+    trainable: true
+    units: 300
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_7, trainable: true}
+- class_name: Dropout
+  config: {name: dropout_5, noise_shape: null, rate: 0.001, seed: null, trainable: true}
+- class_name: Dense
+  config:
+    activation: linear
+    activity_regularizer: null
+    bias_constraint: null
+    bias_initializer:
+      class_name: Zeros
+      config: {}
+    bias_regularizer: null
+    kernel_constraint: null
+    kernel_initializer:
+      class_name: VarianceScaling
+      config: {distribution: uniform, mode: fan_avg, scale: 1.0, seed: null}
+    kernel_regularizer: null
+    name: dense_7
+    trainable: true
+    units: 100
+    use_bias: true
+- class_name: Activation
+  config: {activation: Threshold, name: activation_8, trainable: true}
+keras_version: 2.1.5
